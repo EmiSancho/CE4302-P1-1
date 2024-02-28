@@ -1,29 +1,40 @@
 import numpy as np
 
-def filtrado_fir(x, b):
-    Nx = len(x)
-    Nb = len(b)
-    
-    x_padded = np.zeros(Nx + Nb - 1, dtype=np.int32)
-    x_padded[:Nx] = x
-    
-    y = np.zeros(Nx, dtype=np.int32)
-    
-    # Convolución
-    for n in range(Nx):
-        for k in range(min(Nb, n + 1)):
-            y[n] += b[k] * x_padded[n - k]  
+minimo = -128
+maximo = 127
 
-    return y
+def saturado(x):
+    return np.where(x > maximo, maximo, np.where(x < minimo, minimo, x))
+
+def filtro_fir(senal, coeficientes):  
+    senal_float = senal.astype(float) #Señal a punto flotante
+    coeficientes_float = coeficientes.astype(float) #Coheficientes a punto flotante
+    longitud_senal = len(senal) 
+    longitud_coeficientes = len(coeficientes)
+    senal_filtrada = np.zeros(longitud_senal) # Señal filtrada en flotante
+
+    for n in range(longitud_senal):
+        suma = 0.0
+        for k in range(longitud_coeficientes):
+            producto = senal_float[n - k] * coeficientes_float[k] # Señal * coeficiente
+            suma = suma + producto
+
+        senal_filtrada[n] = suma
+
+    resultado_q78 = saturado(np.round(senal_filtrada * 128).astype(np.int16)) # Señal filtrada a Q7.8
+
+    return resultado_q78
 
 if __name__ == "__main__":
-    # Señal de entrada x y los coeficientes b en punto fijo Q7.8
-    x = np.array([128, 64, 32, 16, 8, 4], dtype=np.int32)
-    b = np.array([1, 2, 3, 4, 5], dtype=np.int32)
+    x = np.array([-5, -4, -2, -1, 0, 1, 2, 3, 4, 5])
+    b = np.array([0.01, 0.02, 0.03, 0.04, 0.05])
 
-    # Filtrado FIR
-    resultado = filtrado_fir(x, b)
+    resultado = filtro_fir(x, b)
 
     print("Señal de entrada:", x)
     print("Coeficientes:", b)
     print("Resultado del filtrado FIR:", resultado)
+
+
+
+
