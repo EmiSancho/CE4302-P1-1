@@ -1,3 +1,10 @@
+"""
+ Modelo de referencia que permita validar la correctitud de la implementación de HW
+ capaz de realizar el filtrado FIR de un vector x y coeficientes b usando el mismo 
+ formato de punto fijo Q7.8 y vectorización del ISA diseñado
+
+"""
+
 import numpy as np
 
 minimo = -128
